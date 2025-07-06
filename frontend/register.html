@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - Project Management System</title>
+    <style>
+        * {
+          box-sizing: border-box;
+          font-family: Arial, sans-serif;
+        }
+        body {
+          background-color: #f4f4f4;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+        }
+        .container {
+          background-color: white;
+          padding: 2rem;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          width: 300px;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        input {
+          width: 100%;
+          padding: 10px;
+          margin: 10px 0;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+        button {
+          width: 100%;
+          padding: 10px;
+          background-color: #28a745;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #218838;
+        }
+        #message {
+          margin-top: 10px;
+          color: red;
+          text-align: center;
+        }
+        .login-link {
+          text-align: center;
+          margin-top: 15px;
+          font-size: 0.9rem;
+        }
+        .login-link a {
+          color: #007bff;
+          text-decoration: none;
+        }
+        .login-link a:hover {
+          text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Register</h1>
+    <form id="registerForm">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+        <button type="submit">Register</button>
+    </form>
+    <div id="message"></div>
+    <div class="login-link">
+        Already have an account? <a href="index.html">Login</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      if (password !== confirmPassword) {
+        messageDiv.textContent = "Passwords do not match.";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8080/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const resultText = await response.text(); // plain text response
+
+        if (response.ok) {
+          messageDiv.style.color = 'green';
+          messageDiv.textContent = "Registration successful! Redirecting to login...";
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+        } else {
+          messageDiv.style.color = 'red';
+          messageDiv.textContent = resultText || "Registration failed.";
+        }
+
+      } catch (error) {
+        console.error("Error:", error);
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = "Backend not reachable";
+      }
+    });
+</script>
+</body>
+</html>
