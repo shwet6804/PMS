@@ -1,6 +1,7 @@
 package com.example.pms.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tasks")
@@ -11,7 +12,12 @@ public class Task {
     private Long id;
 
     private String name;
+
     private boolean completed = false;
+
+    private LocalDate dueDate;
+
+    private String priority; // e.g., "Low", "Medium", "High"
 
     @ManyToOne
     @JoinColumn(name = "project_id")
@@ -26,6 +32,12 @@ public class Task {
 
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
+
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }

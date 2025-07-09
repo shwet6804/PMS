@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tasks - Project Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        body {
+          margin: 0;
+          font-family: 'Roboto', sans-serif;
+          background-color: #eef2f3;
+        }
+
+        nav {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 2rem;
+          background: #1e3c72;
+          color: #fff;
+        }
+
+        .logo {
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+
+        .nav-links a {
+          margin: 0 0.8rem;
+          color: #fff;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .nav-links a:hover {
+          color: #ffc107;
+        }
+
+        .container {
+          max-width: 1000px;
+          margin: 2rem auto;
+          background: #fff;
+          padding: 2rem;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+          color: #1e3c72;
+          margin-bottom: 1rem;
+        }
+
+        form {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-bottom: 2rem;
+        }
+
+        select, input[type="text"], input[type="date"] {
+          padding: 0.6rem;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 1rem;
+          flex: 1 1 200px;
+        }
+
+        .btn {
+          padding: 0.6rem 1.5rem;
+          background-color: #1e3c72;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        .btn:hover {
+          background-color: #16325c;
+        }
+
+        .filters {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .task-list {
+          list-style: none;
+          padding: 0;
+        }
+
+        .task-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #f4f4f4;
+          padding: 0.75rem 1rem;
+          margin-bottom: 0.8rem;
+          border-radius: 6px;
+        }
+
+        .task-item.completed {
+          text-decoration: line-through;
+          color: #999;
+          background-color: #d7e3d7;
+        }
+
+        .task-actions button {
+          margin-left: 0.5rem;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+
+        .task-actions .fa-check {
+          color: green;
+        }
+
+        .task-actions .fa-trash {
+          color: red;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">TeamLine</div>
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="projects.html">Projects</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="teams.html">Teams</a>
+        <a href="profile.html">Profile</a>
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>Manage Tasks</h2>
+
+    <form id="taskForm">
+        <select id="projectSelect" required></select>
+        <input type="text" id="taskInput" placeholder="Enter task..." required />
+        <input type="date" id="dueDateInput" required />
+        <select id="prioritySelect" required>
+            <option value="">Priority</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+        </select>
+        <button type="submit" class="btn">Add Task</button>
+    </form>
+
+    <div class="filters">
+        <select id="priorityFilter">
+            <option value="">Filter by Priority</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+        </select>
+
+        <select id="sortSelect">
+            <option value="">Sort by</option>
+            <option value="dueDate">Due Date</option>
+            <option value="priority">Priority</option>
+        </select>
+    </div>
+
+    <ul id="taskList" class="task-list"></ul>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "index.html";
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    async function fetchProjects() {
+      const res = await fetch("http://localhost:8080/api/projects", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const projects = await res.json();
+      const select = document.getElementById("projectSelect");
+      select.innerHTML = '<option value="">Select Project</option>';
+      projects.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id;
+        option.textContent = p.name;
+        select.appendChild(option);
+      });
+    }
+
+    async function fetchTasks() {
+      const selectedProject = document.getElementById("projectSelect").value;
+      if (!selectedProject) return;
+
+      let url = `http://localhost:8080/api/tasks/project/${selectedProject}`;
+      const priority = document.getElementById("priorityFilter").value;
+      const sort = document.getElementById("sortSelect").value;
+
+      if (priority) url += `?priority=${priority}`;
+      if (sort) url += (priority ? "&" : "?") + `sort=${sort}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      const tasks = await res.json();
+      renderTasks(tasks);
+    }
+
+    function renderTasks(tasks) {
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+      tasks.forEach(t => {
+        const li = document.createElement("li");
+        li.className = "task-item" + (t.completed ? " completed" : "");
+        li.innerHTML = `
+          <span>
+            ${t.name}
+            (Priority: ${t.priority || "N/A"}, Due: ${t.dueDate || "N/A"})
+          </span>
+          <div class="task-actions">
+            <button onclick="toggleComplete(${t.id})"><i class="fas fa-check"></i></button>
+            <button onclick="deleteTask(${t.id})"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("taskForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const name = document.getElementById("taskInput").value;
+      const dueDate = document.getElementById("dueDateInput").value;
+      const priority = document.getElementById("prioritySelect").value;
+      const projectId = document.getElementById("projectSelect").value;
+
+      if (!name || !projectId) return alert("Fill all fields");
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/tasks/project/${projectId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify({ name, dueDate, priority })
+        });
+
+        if (res.ok) {
+          document.getElementById("taskForm").reset();
+          fetchTasks();
+        } else {
+          alert("Failed to add task");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error");
+      }
+    });
+
+    async function toggleComplete(id) {
+      try {
+        await fetch(`http://localhost:8080/api/tasks/${id}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
+          },
+          body: JSON.stringify(true)
+        });
+        fetchTasks();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteTask(id) {
+      if (!confirm("Are you sure to delete this task?")) return;
+      try {
+        await fetch(`http://localhost:8080/api/tasks/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token }
+        });
+        fetchTasks();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById("projectSelect").addEventListener("change", fetchTasks);
+    document.getElementById("priorityFilter").addEventListener("change", fetchTasks);
+    document.getElementById("sortSelect").addEventListener("change", fetchTasks);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchProjects();
+    });
+</script>
+
+</body>
+</html>

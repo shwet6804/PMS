@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Projects - TeamLine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+          background: linear-gradient(to right, #1e3c72, #2a5298);
+          color: #fff;
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+        }
+
+        nav {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 2rem;
+          background: rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: #ffffff;
+        }
+
+        .nav-links a {
+          margin: 0 1rem;
+          color: #ffffff;
+          text-decoration: none;
+          transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+          color: #ffc107;
+        }
+
+        .main-content {
+          flex: 1;
+          padding: 2rem;
+          overflow-y: auto;
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        .card {
+          background: #ffffff;
+          padding: 2rem;
+          border-radius: 12px;
+          color: #333;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          margin-bottom: 2rem;
+        }
+
+        .card h2 {
+          color: #1e3c72;
+          margin-bottom: 1rem;
+        }
+
+        input, select, button {
+          padding: 12px;
+          margin: 0.5rem 0;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          width: 100%;
+          font-size: 1rem;
+        }
+
+        button {
+          background: #1e3c72;
+          color: #fff;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background 0.3s;
+        }
+
+        button:hover {
+          background: #0f2656;
+        }
+
+        .project {
+          background: #f1f1f1;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          border-radius: 6px;
+          color: #333;
+        }
+
+        .actions button {
+          margin-right: 0.5rem;
+          padding: 0.4rem 0.8rem;
+          font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">TeamLine</div>
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="projects.html">Projects</a>
+        <a href="tasks.html">Tasks</a>
+        <a href="profile.html">Profile</a>
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="card">
+        <h2>Create New Project</h2>
+        <form id="projectForm">
+            <input type="text" id="projectName" placeholder="Project Name" required />
+            <select id="projectStatus" required>
+                <option value="">Select Status</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <button type="submit">Add Project</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Your Projects</h2>
+        <input type="text" id="searchInput" placeholder="Search by name...">
+        <div id="projectList"></div>
+    </div>
+</div>
+
+<script>
+    let allProjects = [];
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "index.html";
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "index.html";
+    }
+
+    function handleSearch() {
+      renderProjects(allProjects);
+    }
+
+    async function fetchProjects() {
+      try {
+        const res = await fetch("http://localhost:8080/api/projects", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const projects = await res.json();
+        renderProjects(projects);
+      } catch (err) {
+        alert("Failed to fetch projects");
+        console.error(err);
+      }
+    }
+
+    function renderProjects(projects) {
+      allProjects = projects;
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = projects.filter(p => p.name.toLowerCase().includes(searchTerm));
+      const projectList = document.getElementById("projectList");
+      projectList.innerHTML = "";
+      filtered.forEach((project) => {
+        const div = document.createElement("div");
+        div.className = "project";
+        div.innerHTML = `
+          <input type="text" value="${project.name}" disabled id="name-${project.id}" />
+          <select disabled id="status-${project.id}">
+            <option value="Pending" ${project.status === "Pending" ? "selected" : ""}>Pending</option>
+            <option value="In Progress" ${project.status === "In Progress" ? "selected" : ""}>In Progress</option>
+            <option value="Completed" ${project.status === "Completed" ? "selected" : ""}>Completed</option>
+          </select>
+          <div class="actions" id="actions-${project.id}">
+            <button onclick="enableEdit(${project.id})">Edit</button>
+            <button onclick="deleteProject(${project.id})">Delete</button>
+          </div>
+        `;
+        projectList.appendChild(div);
+      });
+    }
+
+    function enableEdit(id) {
+      document.getElementById(`name-${id}`).disabled = false;
+      document.getElementById(`status-${id}`).disabled = false;
+      document.getElementById(`actions-${id}`).innerHTML = `
+        <button onclick="saveProject(${id})">Save</button>
+        <button onclick="cancelEdit(${id})">Cancel</button>
+      `;
+    }
+
+    function cancelEdit(id) {
+      fetchProjects();
+    }
+
+    async function saveProject(id) {
+      const name = document.getElementById(`name-${id}`).value;
+      const status = document.getElementById(`status-${id}`).value;
+      try {
+        const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({ name, status })
+        });
+        if (res.ok) fetchProjects();
+        else alert("Failed to update project");
+      } catch (err) {
+        console.error("Update failed:", err);
+      }
+    }
+
+    async function deleteProject(id) {
+      if (!confirm("Are you sure you want to delete this project?")) return;
+      try {
+        const res = await fetch(`http://localhost:8080/api/projects/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (res.ok) fetchProjects();
+        else alert("Failed to delete project");
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
+    }
+
+    document.getElementById("projectForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const name = document.getElementById("projectName").value.trim();
+      const status = document.getElementById("projectStatus").value;
+      if (!name || !status) return alert("Please fill in all fields");
+      try {
+        const res = await fetch("http://localhost:8080/api/projects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({ name, status })
+        });
+        if (res.ok) {
+          document.getElementById("projectForm").reset();
+          fetchProjects();
+        } else {
+          const msg = await res.text();
+          alert("Error: " + msg);
+        }
+      } catch (err) {
+        console.error("Error adding project:", err);
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchProjects();
+      document.getElementById("searchInput").addEventListener("input", handleSearch);
+    });
+</script>
+
+</body>
+</html>

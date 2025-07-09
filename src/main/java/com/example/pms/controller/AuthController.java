@@ -16,18 +16,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.register(request.getEmail(), request.getPassword()));
+        return ResponseEntity.ok(authService.register(request.getName(), request.getEmail(), request.getPassword()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        System.out.println("Login hit: " + request.getEmail()); // Debug print
         return ResponseEntity.ok(authService.login(request.getEmail(), request.getPassword()));
     }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Auth route accessible");
-    }
-
 }
