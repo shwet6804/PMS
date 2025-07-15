@@ -5,139 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Dashboard - TeamLine</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          font-family: 'Roboto', sans-serif;
-        }
-
-        body {
-          background: linear-gradient(to right, #1e3c72, #2a5298);
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-          color: #fff;
-        }
-
-        nav {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem 2rem;
-          background: rgba(0, 0, 0, 0.3);
-        }
-
-        .logo {
-          font-size: 1.6rem;
-          font-weight: 700;
-          color: #ffffff;
-        }
-
-        .nav-links a {
-          margin: 0 1rem;
-          color: #ffffff;
-          text-decoration: none;
-          transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-          color: #ffc107;
-        }
-
-        .main-content {
-          flex: 1;
-          padding: 2rem;
-          overflow-y: auto;
-          animation: fadeIn 1s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-          background: #ffffff;
-          padding: 2rem;
-          border-radius: 12px;
-          color: #333;
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-          margin-bottom: 2rem;
-        }
-
-        .card h2 {
-          margin-bottom: 1rem;
-          color: #1e3c72;
-        }
-
-        .stats-container {
-          display: flex;
-          justify-content: space-around;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .stat-box {
-          background: #e3f2fd;
-          color: #1e3c72;
-          padding: 1rem 1.5rem;
-          border-radius: 10px;
-          text-align: center;
-          flex: 1;
-          min-width: 200px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .profile-pic {
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          background: #ccc;
-          margin-bottom: 1rem;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="min-h-screen bg-gradient-to-r from-blue-900 to-blue-700 text-white font-['Roboto'] flex flex-col">
 
-<nav>
-    <div class="logo">TeamLine</div>
-    <div class="nav-links">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="projects.html">Projects</a>
-        <a href="tasks.html">Tasks</a>
-        <a href="profile.html">Profile</a>
-        <a href="#" onclick="logout()">Logout</a>
+<!-- Navbar -->
+<nav class="flex justify-between items-center px-6 py-4 bg-black/30 text-white">
+    <div class="text-2xl font-bold">TeamLine</div>
+    <div class="space-x-4 text-sm md:text-base">
+        <a href="dashboard.html" class="hover:text-yellow-300 transition">Dashboard</a>
+        <a href="projects.html" class="hover:text-yellow-300 transition">Projects</a>
+        <a href="tasks.html" class="hover:text-yellow-300 transition">Tasks</a>
+        <a href="profile.html" class="hover:text-yellow-300 transition">Profile</a>
+        <a href="#" onclick="logout()" class="hover:text-red-400 transition">Logout</a>
     </div>
 </nav>
 
-<div class="main-content">
-    <div class="card" style="text-align: center;">
-        <div class="profile-pic"></div>
-        <h2 class="user-name">User Name</h2>
-        <p class="user-email">Fetching user info...</p>
-    </div>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto px-4 py-8 animate-fade-in space-y-6">
 
-    <div class="card">
-        <h2>Project Statistics</h2>
-        <div class="stats-container">
-            <div class="stat-box">
-                <h3>Total Projects</h3>
-                <p id="stat-total">0</p>
+    <!-- User Card -->
+    <section class="bg-white text-gray-800 rounded-xl shadow-lg p-6 text-center max-w-xl mx-auto">
+        <div class="w-24 h-24 mx-auto rounded-full bg-gray-300 mb-4">
+            <img src="default-user.png"/>
+        </div>
+        <h2 class="text-2xl font-bold user-name text-blue-900">User Name</h2>
+        <p class="text-gray-600 user-email">Fetching user info...</p>
+    </section>
+
+    <!-- Stats -->
+    <section class="bg-white text-gray-800 rounded-xl shadow-lg p-6 max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-blue-900 mb-4">Project Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 p-4 rounded-lg text-center shadow">
+                <h3 class="text-lg font-semibold text-blue-700">Total Projects</h3>
+                <p id="stat-total" class="text-3xl font-bold text-blue-800 mt-2">0</p>
             </div>
-            <div class="stat-box">
-                <h3>In Progress</h3>
-                <p id="stat-progress">0</p>
+            <div class="bg-yellow-50 p-4 rounded-lg text-center shadow">
+                <h3 class="text-lg font-semibold text-yellow-700">In Progress</h3>
+                <p id="stat-progress" class="text-3xl font-bold text-yellow-800 mt-2">0</p>
             </div>
-            <div class="stat-box">
-                <h3>Completed</h3>
-                <p id="stat-completed">0</p>
+            <div class="bg-green-50 p-4 rounded-lg text-center shadow">
+                <h3 class="text-lg font-semibold text-green-700">Completed</h3>
+                <p id="stat-completed" class="text-3xl font-bold text-green-800 mt-2">0</p>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
+</main>
+
+<!-- Animation Styles -->
+<style>
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<!-- JS Logic -->
 <script>
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "index.html";

@@ -38,7 +38,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProject(@PathVariable Long id, @RequestHeader("Authorization") String auth) {
+    public ResponseEntity<?> deleteProject(@PathVariable String id, @RequestHeader("Authorization") String auth) {
         User user = authService.getUserFromToken(auth);
         boolean deleted = projectService.deleteUserProjectById(id, user);
 
@@ -52,7 +52,7 @@ public class ProjectController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Project> updateProject(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody Project updatedProject,
             @RequestHeader("Authorization") String token) {
         User user = authService.getUserFromToken(token);

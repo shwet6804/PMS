@@ -27,7 +27,7 @@ public class TaskController {
     private AuthService authService;
 
     @GetMapping("/project/{projectId}")
-    public ResponseEntity<List<Task>> getTasks(@PathVariable Long projectId,
+    public ResponseEntity<List<Task>> getTasks(@PathVariable String projectId,
                                                @RequestHeader("Authorization") String token,
                                                @RequestParam(required = false) String priority,
                                                @RequestParam(required = false) Boolean completed) {
@@ -44,7 +44,7 @@ public class TaskController {
     }
 
     @PostMapping("/project/{projectId}")
-    public ResponseEntity<Task> addTask(@PathVariable Long projectId,
+    public ResponseEntity<Task> addTask(@PathVariable String projectId,
                                         @RequestBody Task task,
                                         @RequestHeader("Authorization") String token) {
         User user = authService.getUserFromToken(token);
@@ -54,13 +54,13 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}/status")
-    public ResponseEntity<Task> updateTaskStatus(@PathVariable Long taskId,
+    public ResponseEntity<Task> updateTaskStatus(@PathVariable String taskId,
                                                  @RequestBody boolean completed) {
         return ResponseEntity.ok(taskService.updateTaskStatus(taskId, completed));
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<?> deleteTask(@PathVariable Long taskId) {
+    public ResponseEntity<?> deleteTask(@PathVariable String taskId) {
         taskService.deleteTask(taskId);
         return ResponseEntity.ok().build();
     }

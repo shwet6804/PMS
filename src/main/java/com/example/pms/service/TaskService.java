@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -23,14 +22,14 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTaskStatus(Long taskId, boolean completed) {
+    public Task updateTaskStatus(String taskId, boolean completed) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         task.setCompleted(completed);
         return taskRepository.save(task);
     }
 
-    public void deleteTask(Long taskId) {
+    public void deleteTask(String taskId) {
         taskRepository.deleteById(taskId);
     }
 

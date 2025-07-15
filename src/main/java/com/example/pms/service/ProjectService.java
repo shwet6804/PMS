@@ -26,7 +26,7 @@ public class ProjectService {
     }
 
     // Delete a project by ID if it belongs to the user
-    public boolean deleteUserProjectById(Long id, User user) {
+    public boolean deleteUserProjectById(String id, User user) {
         Optional<Project> project = projectRepository.findById(id);
         if (project.isPresent() && project.get().getUser().getId().equals(user.getId())) {
             projectRepository.deleteById(id);
@@ -36,7 +36,7 @@ public class ProjectService {
     }
 
     // Update project name and status if it belongs to the user
-    public Project updateProject(Long id, Project updatedProject, User user) {
+    public Project updateProject(String id, Project updatedProject, User user) {
         Optional<Project> optionalProject = projectRepository.findById(id);
         if (optionalProject.isEmpty()) {
             System.out.println("❌ Project not found with id: " + id);
@@ -64,13 +64,12 @@ public class ProjectService {
 
         return projectRepository.save(existing);
     }
-    public Project getUserProjectById(Long id, User user) {
+
+    public Project getUserProjectById(String id, User user) {
         Optional<Project> project = projectRepository.findById(id);
         if (project.isEmpty() || !project.get().getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Project not found or unauthorized");
         }
         return project.get();
     }
-
-
 }

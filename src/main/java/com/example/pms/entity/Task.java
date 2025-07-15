@@ -1,31 +1,28 @@
 package com.example.pms.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "tasks")
+@Document(collection = "tasks")
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String name;
-
     private boolean completed = false;
-
     private LocalDate dueDate;
-
     private String priority; // e.g., "Low", "Medium", "High"
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
+    @DBRef
     private Project project;
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
