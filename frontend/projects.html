@@ -81,6 +81,7 @@
           font-weight: bold;
           cursor: pointer;
           transition: background 0.3s;
+          border: none;
         }
 
         button:hover {
@@ -95,10 +96,16 @@
           color: #333;
         }
 
+        .actions {
+          display: flex;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
         .actions button {
-          margin-right: 0.5rem;
-          padding: 0.4rem 0.8rem;
+          padding: 0.5rem 1rem;
           font-size: 0.9rem;
+          border-radius: 6px;
         }
     </style>
 </head>
@@ -137,7 +144,6 @@
     </div>
 </div>
 
-
 <script>
     let allProjects = [];
     const token = localStorage.getItem("token");
@@ -164,7 +170,6 @@
           headers: { Authorization: "Bearer " + token },
         });
         const projects = await res.json();
-        console.log("Fetched projects:", projects);
         renderProjects(projects);
       } catch (err) {
         alert("Failed to fetch projects");
@@ -178,28 +183,38 @@
       const filtered = projects.filter(p => p.name.toLowerCase().includes(searchTerm));
       const projectList = document.getElementById("projectList");
       projectList.innerHTML = "";
+
       filtered.forEach((project) => {
         const id = project.id;
         const div = document.createElement("div");
         div.className = "project";
+
         div.innerHTML = `
-          <input type="text" value="${escapeHtml(project.name)}" disabled id="name-${id}" />
-          <select disabled id="status-${id}">
-            <option value="Pending" ${project.status === "Pending" ? "selected" : ""}>Pending</option>
-            <option value="In Progress" ${project.status === "In Progress" ? "selected" : ""}>In Progress</option>
-            <option value="Completed" ${project.status === "Completed" ? "selected" : ""}>Completed</option>
-          </select>
+          <div class="mb-3">
+            <label for="name-${id}" class="block font-semibold">Project Name</label>
+            <input type="text" value="${escapeHtml(project.name)}" disabled id="name-${id}" />
+          </div>
+
+          <div class="mb-3">
+            <label for="status-${id}" class="block font-semibold">Status</label>
+            <select disabled id="status-${id}">
+              <option value="Pending" ${project.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option value="In Progress" ${project.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Completed" ${project.status === "Completed" ? "selected" : ""}>Completed</option>
+            </select>
+          </div>
+
           <div class="actions" id="actions-${id}">
             <button onclick="enableEdit('${id}')">Edit</button>
             <button onclick="deleteProject('${id}')">Delete</button>
           </div>
         `;
+
         projectList.appendChild(div);
       });
     }
 
     function enableEdit(id) {
-      console.log("Enable edit for:", id);
       document.getElementById(`name-${id}`).disabled = false;
       document.getElementById(`status-${id}`).disabled = false;
       document.getElementById(`actions-${id}`).innerHTML = `
@@ -209,7 +224,7 @@
     }
 
     function cancelEdit(id) {
-      fetchProjects(); // Reloads original data
+      fetchProjects();
     }
 
     function saveProject(id) {
@@ -243,43 +258,41 @@
       fetchProjects();
       document.getElementById("searchInput").addEventListener("input", handleSearch);
     });
+
     document.getElementById("projectForm").addEventListener("submit", async function (e) {
-  e.preventDefault(); // Prevent default form submission
+      e.preventDefault();
 
-  const name = document.getElementById("projectName").value.trim();
-  const status = document.getElementById("projectStatus").value;
+      const name = document.getElementById("projectName").value.trim();
+      const status = document.getElementById("projectStatus").value;
 
-  if (!name || !status) {
-    alert("Please fill in all fields.");
-    return;
-  }
+      if (!name || !status) {
+        alert("Please fill in all required fields.");
+        return;
+      }
 
-  try {
-    const res = await fetch("http://localhost:8080/api/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({ name, status })
+      try {
+        const res = await fetch("http://localhost:8080/api/projects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ name, status })
+        });
+
+        if (res.ok) {
+          document.getElementById("projectForm").reset();
+          fetchProjects(); // Refresh
+        } else {
+          alert("Failed to add project");
+          const err = await res.text();
+          console.error("Error adding project:", err);
+        }
+      } catch (error) {
+        console.error("Exception while adding project:", error);
+        alert("Something went wrong");
+      }
     });
-
-    if (res.ok) {
-      document.getElementById("projectForm").reset(); // Clear the form
-      fetchProjects(); // Reload the project list
-    } else {
-      alert("Failed to add project");
-      const err = await res.text();
-      console.error("Error adding project:", err);
-    }
-  } catch (error) {
-    console.error("Exception while adding project:", error);
-    alert("Something went wrong");
-  }
-});
-
 </script>
-
-
 </body>
 </html>

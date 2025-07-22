@@ -22,14 +22,13 @@ public class ProjectController {
     private AuthService authService;
 
     @PostMapping
-    public ResponseEntity<Project> createProject(@RequestBody Project project, @RequestHeader("Authorization") String token) {
-        String username = jwtUtil.extractUsername(token.substring(7));
-        User user = userService.findByUsername(username);
-        project.setUserId(user.getId()); // Mongo-style user reference
-        Project saved = projectRepository.save(project);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    public ResponseEntity<Project> createProject(@RequestBody Project project,
+                                                 @RequestHeader("Authorization") String auth) {
+        User user = authService.getUserFromToken(auth);
+        project.setUser(user);
+        Project saved = projectService.createProject(project);
+        return ResponseEntity.ok(saved);
     }
-
 
     @GetMapping
     public ResponseEntity<List<Project>> getUserProjects(@RequestHeader("Authorization") String auth) {
