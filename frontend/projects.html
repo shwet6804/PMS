@@ -243,6 +243,41 @@
       fetchProjects();
       document.getElementById("searchInput").addEventListener("input", handleSearch);
     });
+    document.getElementById("projectForm").addEventListener("submit", async function (e) {
+  e.preventDefault(); // Prevent default form submission
+
+  const name = document.getElementById("projectName").value.trim();
+  const status = document.getElementById("projectStatus").value;
+
+  if (!name || !status) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:8080/api/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ name, status })
+    });
+
+    if (res.ok) {
+      document.getElementById("projectForm").reset(); // Clear the form
+      fetchProjects(); // Reload the project list
+    } else {
+      alert("Failed to add project");
+      const err = await res.text();
+      console.error("Error adding project:", err);
+    }
+  } catch (error) {
+    console.error("Exception while adding project:", error);
+    alert("Something went wrong");
+  }
+});
+
 </script>
 
 
